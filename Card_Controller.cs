@@ -3,17 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class Card_Controller : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerEnterHandler, IPointerExitHandler
+public class Card_Controller : MonoBehaviour, IPointerClickHandler
 {
-    public static Vector2 DefaultPos;
-    public static Card_Deck_Controller deck;
-    public GameObject Deck_Position;
-    RectTransform trans;
+    RectTransform trans; //카드 위치를 지정할 컴포넌트, 카드는 UI로 만들었기 때문에 Transform이 아닌 RectTransform사용
+
+    public bool onClick = false; //카드를 선택했는지 확일할때 쓸 Bool 함수
     public void Awake()
     {
-        deck = GameObject.Find("Deck_Pos").GetComponent<Card_Deck_Controller>();
         trans = GetComponent<RectTransform>();
-        Deck_Position = GameObject.Find("Deck_Pos");
     }
 
     public void Update()
@@ -21,43 +18,19 @@ public class Card_Controller : MonoBehaviour, IBeginDragHandler, IEndDragHandler
 
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
+    public void OnPointerClick(PointerEventData eventData) //클릭함수
     {
-        this.trans.anchoredPosition = new Vector2(trans.anchoredPosition.x, trans.anchoredPosition.y + 34);
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        this.trans.anchoredPosition = new Vector2(trans.anchoredPosition.x, trans.anchoredPosition.y - 34);
-    }
-
-    void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
-    {
-        DefaultPos = this.transform.position;
-    }
-
-    void IDragHandler.OnDrag(PointerEventData eventData)
-    {
-        Vector2 currentPos = Input.mousePosition;
-        transform.rotation = Quaternion.Euler(0, 0, 0);
-        this.transform.position = currentPos;
-    }
-
-    void IEndDragHandler.OnEndDrag(PointerEventData eventData)
-    {
-        if (Input.mousePosition.y > 300)
+        if(this.onClick == true)
         {
-            //Card_Using();
-            this.gameObject.SetActive(false);
-            deck.size--;
-            this.transform.parent.gameObject.SetActive(false);
-            this.transform.SetParent(Deck_Position.transform);
-            this.transform.position = Deck_Position.transform.position;
+            this.trans.anchoredPosition = new Vector2(trans.anchoredPosition.x, trans.anchoredPosition.y - 34);
+            GameManager.card_Ready.Remove(this.gameObject);
+            onClick = false;
         }
-        else
+        else if(this.onClick == false && GameManager.card_Ready.Count < 3)
         {
-            this.transform.position = DefaultPos;
-            transform.rotation = Quaternion.Euler(0, 0, transform.parent.eulerAngles.z);
+            this.trans.anchoredPosition = new Vector2(trans.anchoredPosition.x, trans.anchoredPosition.y + 34);
+            GameManager.card_Ready.Add(this.gameObject);
+            onClick = true;
         }
     }
 

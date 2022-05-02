@@ -4,27 +4,29 @@ using UnityEngine;
 
 public class Card_Deck_Controller : MonoBehaviour
 {
-    List<GameObject> cd_hand = new List<GameObject>();
-    RectTransform rect;
-    public GameObject[] deck = new GameObject[30];
-    public GameObject card_Pos;
-    public int size = 5;
-    public int deck_count = 30;
-    // Start is called before the first frame update
-    void Start()
+    List<GameObject> cd_hand = new List<GameObject>(); //손에 가지고 있는 카드 리스트
+    public static List<GameObject> deck = new List<GameObject>(); //덱 리스트
+    public GameObject card_Pos; //카드의 위치를 지정할 빈 오브젝트
+    public int size = 5; //손에 가지고 있는 카드의 개수
+    public int deck_count = 30; //덱이 가지고 있는 초기 카드 개수
+
+    public void Awake()
     {
-        rect = GetComponent<RectTransform>();
-        DeckSetting();
         Start_Setting();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        Card_Pos_Rotate();
+        if(Input.GetKeyDown(KeyCode.A)) //디버깅용 함수. 없어도 무관
+        {
+            for (int i = 0; i < 25; i++)
+            {
+                Debug.Log(deck[i].name);
+            }
+        }
     }
 
-    public void Start_Setting()
+    public void Start_Setting()//씬 시작시 실행할 함수, 카드를 뽑는 함수인 Draw함수를 5번 실행한다.
     {
         for(int i = 0; i < 5; i++)
         {
@@ -32,12 +34,13 @@ public class Card_Deck_Controller : MonoBehaviour
         }
     }   
 
-    public void Draw()
+    public void Draw() //덱에서 카드를 뽑는 함수
     {
-        int num = Random.Range(0,deck_count);
+        int num = Random.Range(0,deck_count); //랜덤으로 리스트 위치를 지정할 int형 변수 deck_count를 쓰는 이유는 리스트 범위 밖을 벗어나면 안되기 때문
         int chid_num = 0;
         deck_count--;
-        while(true)
+
+        while(true) 
         {
             if (card_Pos.transform.GetChild(chid_num).gameObject.activeSelf == false)
             {
@@ -47,42 +50,18 @@ public class Card_Deck_Controller : MonoBehaviour
             else chid_num++;   
         }
 
-        GameObject rand_card = this.transform.GetChild(num).gameObject;
+        GameObject rand_card = Instantiate(deck[num].gameObject); //카드 소환
+        deck.Remove(deck[num]); //뽑은 카드는 덱에서 삭제
         rand_card.transform.SetParent(card_Pos.transform.GetChild(chid_num));
-        rand_card.transform.position = card_Pos.transform.GetChild(chid_num).transform.GetChild(0).position;
-        rand_card.transform.rotation = card_Pos.transform.GetChild(chid_num).rotation;
-        rand_card.gameObject.SetActive(true);
+        rand_card.transform.position = card_Pos.transform.GetChild(chid_num).position;
     }
 
-    public void Button_Draw()
+    public void Button_Draw() //카드뽑기 버튼을 누르면 실행
     {
         if(size < 7)
         {
             size++;
             Draw();
-        }
-    }
-
-    public void DeckSetting()
-    {
-        for (int i = 0; i < 30; i++)
-        {
-            //deck[i] = Resources.Load<GameObject>("Prefabs/Card");
-            Instantiate(deck[i], this.transform);
-            deck[i].gameObject.SetActive(false);
-            deck[i].transform.position = this.transform.position;
-        }
-    }
-
-    public void Card_Pos_Rotate()
-    {
-        float first_num = (11.25f * size - 1) + 12.25f;
-        for(int i = 0; i < 7; i++)
-        {
-            if(card_Pos.transform.GetChild(i).gameObject.activeSelf == true)
-            {
-                card_Pos.transform.GetChild(i).rotation = Quaternion.Euler(0, 0, first_num -= 22.5f);
-            }
         }
     }
 }
